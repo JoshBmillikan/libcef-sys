@@ -125,7 +125,7 @@ fn copy_libs(mut path: PathBuf) {
         }
     }
     path.pop();
-    let resources = path.join("Resources");
+    let resources = path;
     println!("{}",resources.to_string_lossy());
     let mut options = CopyOptions::new();
     options.overwrite = true;
