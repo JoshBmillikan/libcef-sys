@@ -1,6 +1,8 @@
+use fs_extra::dir::CopyOptions;
+use std::default::Default;
 use std::env;
 use std::error::Error;
-use std::fs::{copy, read_dir};
+use std::fs::{copy, create_dir, read_dir};
 use std::path::PathBuf;
 
 fn main() {
@@ -102,21 +104,34 @@ fn main() {
         .expect("Couldn't write bindings!");
 
     copy_libs(lib);
-
 }
 
-fn copy_libs(path: PathBuf) {
+fn copy_libs(mut path: PathBuf) {
     let out = find_cargo_target_dir();
     let regex = regex::Regex::new(".*\\.dll|.*\\.so|.*\\.dylib").unwrap();
-    for file in read_dir(path).expect("Could not read shared libraries") {
+    for file in read_dir(&path).expect("Could not read shared libraries") {
         if let Ok(file) = file {
             if regex.is_match(file.file_name().to_str().unwrap()) {
-                copy(file.path(),&out.join(file.file_name())).expect(&format!(
-                    "Failed to copy dynamic library {} to {}", file.path().to_string_lossy(), out.to_string_lossy()));
-                println!("Copied {} to target directory", file.path().to_string_lossy());
+                copy(file.path(), &out.join(file.file_name())).expect(&format!(
+                    "Failed to copy dynamic library {} to {}",
+                    file.path().to_string_lossy(),
+                    out.to_string_lossy()
+                ));
+                println!(
+                    "Copied {} to target directory",
+                    file.path().to_string_lossy()
+                );
             }
         }
     }
+    path.pop();
+    let resources = path.join("Resources");
+    println!("{}",resources.to_string_lossy());
+    let mut options = CopyOptions::new();
+    options.overwrite = true;
+    options.copy_inside = true;
+    let _ = fs_extra::dir::copy(&resources, &out, &options)
+        .expect("Failed to copy resources");
 }
 
 // borrowed from Rust-SDL2's build script
