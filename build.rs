@@ -1,6 +1,6 @@
 use std::env;
 use std::error::Error;
-use std::fs::read_dir;
+use std::fs::{copy, read_dir};
 use std::path::PathBuf;
 
 fn main() {
@@ -100,6 +100,46 @@ fn main() {
     bindings
         .write_to_file(out_path.join("bindings.rs"))
         .expect("Couldn't write bindings!");
+
+    copy_libs(lib);
+
+}
+
+fn copy_libs(path: PathBuf) {
+    let out = find_cargo_target_dir();
+    let regex = regex::Regex::new(".*\\.dll|.*\\.so|.*\\.dylib").unwrap();
+    for file in read_dir(path).expect("Could not read shared libraries") {
+        if let Ok(file) = file {
+            if regex.is_match(file.file_name().to_str().unwrap()) {
+                copy(file.path(),&out.join(file.file_name())).expect(&format!(
+                    "Failed to copy dynamic library {} to {}", file.path().to_string_lossy(), out.to_string_lossy()));
+                println!("Copied {} to target directory", file.path().to_string_lossy());
+            }
+        }
+    }
+}
+
+// borrowed from Rust-SDL2's build script
+fn find_cargo_target_dir() -> PathBuf {
+    // Infer the top level cargo target dir from the OUT_DIR by searching
+    // upwards until we get to $CARGO_TARGET_DIR/build/ (which is always one
+    // level up from the deepest directory containing our package name)
+    let pkg_name = env::var("CARGO_PKG_NAME").unwrap();
+    let mut out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
+    loop {
+        {
+            let final_path_segment = out_dir.file_name().unwrap();
+            if final_path_segment.to_string_lossy().contains(&pkg_name) {
+                break;
+            }
+        }
+        if !out_dir.pop() {
+            panic!("Malformed build path: {}", out_dir.to_string_lossy());
+        }
+    }
+    out_dir.pop();
+    out_dir.pop();
+    out_dir
 }
 
 fn find_cef() -> Result<(PathBuf, PathBuf), Box<dyn Error>> {
