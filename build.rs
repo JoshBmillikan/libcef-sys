@@ -11,11 +11,11 @@ fn main() {
     println!("cargo:rustc-link-search=native={}", lib.to_str().unwrap());
     println!("cargo:rustc-link-lib=libcef");
     let c_headers = include.join("capi");
-    let mut bindings = bindgen::Builder::default()
+    let bindings = bindgen::Builder::default()
         .clang_arg(format!("-I{}", include.to_str().unwrap()))
         .clang_arg("-D WIN32_LEAN_AND_MEAN")
         .rustfmt_bindings(true);
-        if cfg!(target_os = "windows") {
+        let mut bindings = if cfg!(target_os = "windows") {
             // because windows....
             bindings.blocklist_file("windows.h")
                 .blocklist_file("Windows.h")
