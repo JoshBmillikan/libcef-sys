@@ -134,7 +134,7 @@ fn copy_resources(path: &PathBuf, out: &PathBuf) {
         if let Ok(file) = file {
             if file.file_type().unwrap().is_dir() {
                 let _ = create_dir(out.join(file.file_name()));
-                copy_resources(&path.join(file.path()), &out.join(file.path()));
+                copy_resources(&path.join(file.path()), &out.join(file.file_name()));
             } else if file.file_type().unwrap().is_file() {
                 copy(file.path(), &out.join(file.file_name())).unwrap();
             }
