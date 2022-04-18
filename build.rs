@@ -1,4 +1,3 @@
-use fs_extra::dir::CopyOptions;
 use std::default::Default;
 use std::env;
 use std::error::Error;
@@ -125,13 +124,22 @@ fn copy_libs(mut path: PathBuf) {
         }
     }
     path.pop();
-    let resources = path;
-    println!("{}",resources.to_string_lossy());
-    let mut options = CopyOptions::new();
-    options.overwrite = true;
-    options.copy_inside = true;
-    let _ = fs_extra::dir::copy(&resources, &out, &options)
-        .expect("Failed to copy resources");
+
+    copy_resources(&path.join("Resources"), &out);
+}
+
+fn copy_resources(path: &PathBuf, out: &PathBuf) {
+    let resources = read_dir(path).unwrap();
+    for file in resources {
+        if let Ok(file) = file {
+            if file.file_type().unwrap().is_dir() {
+                let _ = create_dir(out.join(file.file_name()));
+                copy_resources(&path.join(file.path()), &out.join(file.path()));
+            } else if file.file_type().unwrap().is_file() {
+                copy(file.path(), &out.join(file.file_name())).unwrap();
+            }
+        }
+    }
 }
 
 // borrowed from Rust-SDL2's build script
