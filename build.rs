@@ -75,6 +75,9 @@ fn main() {
     }
     .derive_default(true)
     .size_t_is_usize(true)
+    .generate_comments(true)
+    .clang_arg("-fparse-all-comments")
+    .layout_tests(false)
     .parse_callbacks(Box::new(bindgen::CargoCallbacks));
 
     for file in read_dir(c_headers.clone()).expect(
