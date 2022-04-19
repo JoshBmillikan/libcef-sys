@@ -110,7 +110,7 @@ fn main() {
 
 fn copy_libs(mut path: PathBuf) {
     let out = find_cargo_target_dir();
-    let regex = regex::Regex::new(".*\\.dll|.*\\.so|.*\\.dylib").unwrap();
+    let regex = regex::Regex::new(".*\\.dll|.*\\.so|.*\\.dylib|.*\\.bin").unwrap();
     for file in read_dir(&path).expect("Could not read shared libraries") {
         if let Ok(file) = file {
             if regex.is_match(file.file_name().to_str().unwrap()) {
