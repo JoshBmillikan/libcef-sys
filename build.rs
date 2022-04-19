@@ -17,7 +17,7 @@ fn main() {
     };
     println!("cargo:rustc-link-lib=dylib={cef_name}");
     #[cfg(not(target_os = "windows"))]
-    println!("cargo:rustc-link-arg=-rpath,.");
+    println!("cargo:rustc-link-arg=-rpath,${{ORIGIN}}");
     let c_headers = include.join("capi");
     let bindings = bindgen::Builder::default()
         .clang_arg(format!("-I{}", include.to_str().unwrap()))
