@@ -10,7 +10,12 @@ fn main() {
      (Ensure CEF_ROOT is set to the path to the library, or that it is available to pkg_config)",
     );
     println!("cargo:rustc-link-search=native={}", lib.to_str().unwrap());
-    println!("cargo:rustc-link-lib=libcef");
+    let cef_name = if cfg!(target_os = "windows") {
+        "libcef"
+    } else {
+        "cef"
+    };
+    println!("cargo:rustc-link-lib={cef_name}");
     let c_headers = include.join("capi");
     let bindings = bindgen::Builder::default()
         .clang_arg(format!("-I{}", include.to_str().unwrap()))
