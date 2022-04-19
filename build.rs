@@ -15,7 +15,7 @@ fn main() {
     } else {
         "cef"
     };
-    println!("cargo:rustc-link-lib={cef_name}");
+    println!("cargo:rustc-link-lib=dylib={cef_name}");
     let c_headers = include.join("capi");
     let bindings = bindgen::Builder::default()
         .clang_arg(format!("-I{}", include.to_str().unwrap()))
